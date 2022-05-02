@@ -43,6 +43,7 @@ if endpoint == 'Events':
         params['token_id'] = token_id
     if event_type:
         params['event_type'] = event_type
+
     
     r = requests.get('https://api.opensea.io/api/v1/events', params=params)
 
