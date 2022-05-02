@@ -8,12 +8,9 @@ COPY pyproject.toml poetry.lock ./
 
 RUN poetry export --without-hashes -f requirements.txt > requirements.txt
 
-
 FROM python:3.9
 
 ENV PYTHONUNBUFFERED=1
-
-
 
 COPY --from=builder requirements.txt .
 
