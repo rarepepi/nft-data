@@ -2,12 +2,12 @@ import streamlit as st
 import requests, json
 from web3 import Web3
 import pandas as pd
+import os
+from os.path import join, dirname
+from dotenv import load_dotenv
 
-st.sidebar.header("Endpoints")
-endpoint_choices = ['Assets', 'Events', 'Rarity']
-endpoint = st.sidebar.selectbox("Choose an Endpoint", endpoint_choices)
-
-st.title(f"OpenSea API Explorer - {endpoint}")
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
 
 def render_asset(asset):
     if asset['name'] is not None:
@@ -29,85 +29,43 @@ def render_asset(asset):
         st.image(asset['image_url'])
 
 
-if endpoint == 'Events':
-    collection = st.sidebar.text_input("Collection")
-    asset_contract_address = st.sidebar.text_input("Contract Address")
-    token_id = st.sidebar.text_input("Token ID")
-    event_type = st.sidebar.selectbox("Event Type", ['offer_entered', 'cancelled', 'bid_withdrawn', 'transfer', 'approve'])
-    params = {}
-    if collection:
-        params['collection_slug'] = collection
-    if asset_contract_address:
-        params['asset_contract_address'] = asset_contract_address
-    if token_id:
-        params['token_id'] = token_id
-    if event_type:
-        params['event_type'] = event_type
+def main():
+    # Page setup
+    st.set_page_config(
+        page_title="NFT Data - Project2",
+        page_icon="🧊",
+        layout="wide",
+        initial_sidebar_state="expanded",
+    )
+    st.sidebar.header("Pages")
+    page_choices = ['Asset Explorer', 'Anaylsis']
+    page = st.sidebar.selectbox("Choose a Page", page_choices)
+    st.title(f"Project 2 - {page}")
 
-    
-    r = requests.get('https://api.opensea.io/api/v1/events', params=params)
 
-    events = r.json()
-    event_list = []
-    for event in events['asset_events']:
-        if event_type == 'offer_entered':
-            if event['bid_amount']:
-                bid_amount = Web3.fromWei(int(event['bid_amount']), 'ether')
-            if event['from_account']['user']:
-                bidder = event['from_account']['user']['username']
-            else:
-                bidder = event['from_account']['address']
 
-            event_list.append([event['created_date'], bidder, float(bid_amount), event['asset']['collection']['name'], event['asset']['token_id']])
+    if page == 'Asset Explorer':
+        st.sidebar.header('Filters')
+        owner = st.sidebar.text_input("Owner")
+        collection = st.sidebar.text_input("Collection")
+        params = {'owner': owner}
+        if collection:
+            params['collection'] = collection
 
-    df = pd.DataFrame(event_list, columns=['time', 'bidder', 'bid_amount', 'collection', 'token_id'])
-    st.write(df)
-    
-    st.write(events)
+        if len(owner) > 0:
+            r = requests.get(f"https://api.opensea.io/api/v1/assets?collection={collection}&owner={owner}", headers={'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1'})
 
-if endpoint == 'Assets':
-    st.sidebar.header('Filters')
-    owner = st.sidebar.text_input("Owner")
-    collection = st.sidebar.text_input("Collection")
-    params = {'owner': owner}
-    if collection:
-        params['collection'] = collection
+            assets = r.json()['assets']
+            for asset in assets:                
+                render_asset(asset)
 
-    r = requests.get('https://api.opensea.io/api/v1/assets', params=params)
+            st.subheader("Raw JSON Data")
+            st.write(r.json())
+        else:
+            st.write("Put in some fields")
 
-    assets = r.json()['assets']
-    for asset in assets:                
-        render_asset(asset)
 
-    st.subheader("Raw JSON Data")
-    st.write(r.json())
 
-if endpoint == 'Rarity':
-    with open('assets.json') as f:
-        data = json.loads(f.read())
-        asset_rarities = []
 
-        for asset in data['assets']:
-            asset_rarity = 1
-
-            for trait in asset['traits']:
-                trait_rarity = trait['trait_count'] / 8888
-                asset_rarity *= trait_rarity
-
-            asset_rarities.append({
-                'token_id': asset['token_id'],
-                'name': f"Wanderers {asset['token_id']}",
-                'description': asset['description'],
-                'rarity': asset_rarity,
-                'traits': asset['traits'],
-                'image_url': asset['image_url'],
-                'collection': asset['collection']
-            })
-
-        assets_sorted = sorted(asset_rarities, key=lambda asset: asset['rarity']) 
-
-        for asset in assets_sorted[:20]:
-            render_asset(asset)
-            st.subheader(f"{len(asset['traits'])} Traits")
-            for trait in asset['traits']:
-                st.write(f"{trait['trait_type']} - {trait['value']} - {trait['trait_count']} have this")
+if __name__ == '__main__':
+    main()
