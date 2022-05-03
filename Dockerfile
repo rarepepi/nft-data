@@ -21,4 +21,4 @@ COPY . .
 
 EXPOSE 80
 ENTRYPOINT ["streamlit","run"]
-CMD ["app.py", "--server.port=80", "--server.enableCORS=false", "--server.enableWebsocketCompression=false", "--server.enableXsrfProtection=false"]
+CMD ["app.py", "--server.port=80", "--server.enableCORS=false", "--server.baseUrlPath=http://nft-data.eba-npjc2t2n.us-east-1.elasticbeanstalk.com/", "--server.enableWebsocketCompression=false", "--server.enableXsrfProtection=false"]
