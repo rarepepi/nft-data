@@ -21,4 +21,4 @@ COPY . .
 
 EXPOSE 8051
 ENTRYPOINT ["streamlit","run"]
-CMD ["app.py", "--server.enableCORS=false", "--server.enableWebsocketCompression=false", "--server.enableXsrfProtection=false"]
+CMD ["app.py", "--server.address=localhost","--server.enableCORS=false", "--server.enableWebsocketCompression=false", "--server.enableXsrfProtection=false"]
