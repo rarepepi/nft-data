@@ -38,7 +38,7 @@ def main():
         initial_sidebar_state="expanded",
     )
     st.sidebar.header("Pages")
-    page_choices = ['Asset Explorer', 'Anaylsis']
+    page_choices = ['Asset Explorer', 'Analysis']
     page = st.sidebar.selectbox("Choose a Page", page_choices)
     st.title(f"Project 2 - {page}")
 
