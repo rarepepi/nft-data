@@ -19,6 +19,6 @@ RUN pip install -r requirements.txt
 COPY . .
 
 
-EXPOSE 8501
+EXPOSE 80
 ENTRYPOINT ["streamlit","run"]
-CMD ["app.py"]
+CMD ["app.py --server.port 80"]
