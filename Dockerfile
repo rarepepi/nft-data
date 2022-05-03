@@ -21,4 +21,4 @@ COPY . .
 
 EXPOSE 80
 ENTRYPOINT ["streamlit","run"]
-CMD ["app.py", "--server.port", "80", "–browser.serverAddress", "0.0.0.0"]
+CMD ["app.py", "--server.port", "80", "--browser.serverAddress", "0.0.0.0", "--server.enableCORS", "False" ]
