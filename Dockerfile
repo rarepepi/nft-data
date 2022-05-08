@@ -33,10 +33,12 @@ ENV LANG=C.UTF-8
 RUN mkdir -p /root/.streamlit
 RUN bash -c 'echo -e "\
 [general]\n\
-email = \"\"\n\
-" > /root/.streamlit/credentials.toml'
+email = \"billbezo@protonmail.com\"\n\
+" > ~/.streamlit/credentials.toml'
 
 RUN bash -c 'echo -e "\
 [server]\n\
-enableCORS = false\nserver.enableXsrfProtection=false\n\
-" > /root/.streamlit/config.toml'
+headless = true\n\
+enableCORS = false\n\
+server.enableXsrfProtection=false\n\
+" > ~/.streamlit/config.toml'
