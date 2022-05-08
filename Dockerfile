@@ -1,24 +1,42 @@
-FROM python:3.9 as builder
+# base image
+FROM ubuntu:20.04
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=New_York/America
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get install -y python3.9 python3.9-dev python3-pip
 
-RUN pip install --upgrade pip
-RUN pip install --upgrade pip wheel
-RUN pip install poetry
+RUN pip3 install poetry
 
 COPY pyproject.toml poetry.lock ./
 
 RUN poetry export --without-hashes -f requirements.txt > requirements.txt
 
-FROM python:3.9
-
 ENV PYTHONUNBUFFERED=1
 
-COPY --from=builder requirements.txt .
+RUN pip3 install -r requirements.txt
 
-RUN pip install -r requirements.txt
+# exposing default port for streamlit
+EXPOSE 8501
 
+# making directory of app
+WORKDIR /streamlit-docker
+
+# copying all files over
 COPY . .
 
+# cmd to launch app when container is run
+CMD streamlit run app.py
 
-EXPOSE 8051
-ENTRYPOINT ["streamlit","run"]
-CMD ["app.py", '--server.address="localhost"',"--server.port=80", "--server.enableCORS=false", "--server.enableWebsocketCompression=false", "--server.enableXsrfProtection=false"]
+# streamlit-specific commands for config
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+RUN mkdir -p /root/.streamlit
+RUN bash -c 'echo -e "\
+[general]\n\
+email = \"\"\n\
+" > /root/.streamlit/credentials.toml'
+
+RUN bash -c 'echo -e "\
+[server]\n\
+enableCORS = false\nserver.enableXsrfProtection=false\n\
+" > /root/.streamlit/config.toml'
