@@ -5,6 +5,7 @@ import pandas as pd
 import os
 from os.path import join, dirname
 from dotenv import load_dotenv
+from Crypto.Hash import keccak
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -27,6 +28,37 @@ def render_asset(asset):
         st.image(svg)
     elif asset['image_url']:
         st.image(asset['image_url'])
+
+
+def test():
+    OPENSEA_CONTRACT = '0x7Be8076f4EA4A4AD08075C2508e481d6C946D12b'
+    url = '<https://api.etherscan.io/api>'
+    params = {
+    'module': 'logs',
+    'action': 'getLogs',
+    'fromBlock' : BLOCK_START,
+    'toBlock': 'latest',
+    'address': OPENSEA_CONTRACT,
+    'apikey': API_KEY
+    }
+    r = requests.get(url, params=params)
+    json_data = json.loads(r.text)["result"]
+
+    params = {
+    'module': 'block',
+    'action': 'getblocknobytime',
+    'timestamp' : int(time.time() // 1),
+    'closest': 'before',
+    'apikey': API_KEY
+    }
+    r = requests.get(url, params=params)
+    json_data = json.loads(r.text)["result"]
+    LATEST_BLOCK = int(json_data)
+
+    method = b'OrdersMatched(bytes32,bytes32,address,address,uint256,bytes32)'
+
+    k = keccak.new(digest_bits=256)
+    k.update(method)
 
 
 def main():
